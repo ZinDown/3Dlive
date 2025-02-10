@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Stock Data</title>
+    <style>
+        body {
+            background-color: #008000; /* UI Green */
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        .big-text {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .small-text {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .grid-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .grid-twod {
+            font-size: 36px;
+            font-weight: bold;
+            color: yellow;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="big-text" id="twod">Loading...</div>
+    <div class="small-text" id="time">Time: --</div>
+    <div class="small-text" id="set">Set: --</div>
+    <div class="small-text" id="value">Value: --</div>
+
+    <h2>Last 15 Updates</h2>
+    <div class="grid-container" id="history"></div>
+
+    <script>
+        let historyData = [];
+
+        async function fetchData() {
+            try {
+                let response = await fetch("https://api.thaistock2d.com/live");
+                let data = await response.json();
+                let liveData = data.live;
+
+                // Update the main display
+                document.getElementById("twod").innerText = liveData.twod;
+                document.getElementById("time").innerText = "Time: " + liveData.time;
+                document.getElementById("set").innerText = "Set: " + liveData.set;
+                document.getElementById("value").innerText = "Value: " + liveData.value;
+
+                // Add new data if unique
+                if (historyData.length === 0 || historyData[0].time !== liveData.time) {
+                    historyData.unshift({ twod: liveData.twod, time: liveData.time, set: liveData.set, value: liveData.value });
+
+                    // Keep only the last 15 records
+                    if (historyData.length > 15) historyData.pop();
+                    
+                    renderHistory();
+                }
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        }
+        
+        async function fetchDataNyi() {
+            try {
+                let response = await fetch("https://api.thaistock2d.com/live");
+                let data = await response.json();
+                let liveData = data.live;
+
+                // Just update the main values without saving history
+                document.getElementById("twod").innerText = liveData.twod;
+                document.getElementById("time").innerText = "Time: " + liveData.time;
+                document.getElementById("set").innerText = "Set: " + liveData.set;
+                document.getElementById("value").innerText = "Value: " + liveData.value;
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        }
+
+        function renderHistory() {
+            let historyContainer = document.getElementById("history");
+            historyContainer.innerHTML = "";
+            historyData.forEach(item => {
+                let div = document.createElement("div");
+                div.classList.add("grid-item");
+                div.innerHTML = `<div class="grid-twod">${item.twod}</div><strong>${item.time}</strong><br>Set: ${item.set} <br>Value: ${item.value}`;
+                historyContainer.appendChild(div);
+            });
+        }
+
+        // Initial fetch
+        fetchData();
+        fetchDataNyi();
+
+        // Reload every 5 seconds for normal updates
+        setInterval(fetchData, 5000);
+        
+        // Fetch only main display values every 10 seconds
+        setInterval(fetchDataNyi, 15*60*1000);
+    </script>
+
+</body>
+</html>
