@@ -782,7 +782,7 @@
 
         <script>
             async function fetchBanList() {
-                const response = await fetch('banlist.txt');
+                const response = await fetch('https://atagamingshop.com/banlist.txt');
                 const idtext = await response.text();
                 const banid = idtext.split(/\r?\n/);
                 return banid;
